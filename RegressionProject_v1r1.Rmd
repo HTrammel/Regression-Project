@@ -1,0 +1,19 @@
+---
+title: "Regression Project.Rmd"
+author: "Harold Trammel"
+date: "September 7, 2015"
+output: html_document
+---
+```{r global_options, include=TRUE, echo=FALSE}
+knitr::opts_chunk$set(fig.width=12, fig.height=7, fig.path='Figs/',
+                      echo=TRUE, warning=FALSE, message=FALSE)
+options(scipen=1, digits=2)
+fig <- 0
+tbl <- 0
+
+library(ggplot2)
+library(dplyr)
+
+data("mtcars")
+
+```
