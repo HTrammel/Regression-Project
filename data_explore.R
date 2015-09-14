@@ -25,10 +25,18 @@ data("mtcars")
 se <- function(x) sqrt(var(x)/length(x))
 
 cdata <- mtcars
-plot(cdata$mpg ~ cdata$am)
+plot(cdata$mpg ~ cdata$carb)
 
-mn_car <- cdata %>% 
-            group_by(am) %>% 
-            summarise_each(funs(sum, mean, sd, se), mpg)
+g1 = ggplot(cdata, aes(x = carb, y = mpg)) + 
+    ylab("Miles per gallon") + 
+    xlab("Automatic or Manual") + 
+    geom_point(size = 7, colour = "black", alpha=0.5) + 
+    geom_point(size = 5, colour = "blue", alpha=0.2) + 
+    geom_smooth(method = "lm", colour = "black") 
+print(g1)
 
-am_mpg_lm <- lm(cdata$mpg ~ cdata$am)
+# g2 = ggplot(cdata, aes(x = mpg)) +
+#     xlab("Miles per gallon") +
+#     geom_point(stat="bin") + 
+#     facet_wrap(mpg ~ .)
+# print(g2)
