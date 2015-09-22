@@ -2,7 +2,7 @@
 title: "Regression Project.Rmd"
 author: "Harold Trammel"
 date: "September 7, 2015"
-output: html_document
+output: pdf_document
 ---
 ```{r global_options, include=TRUE, echo=FALSE}
 knitr::opts_chunk$set(fig.width=12, fig.height=7, fig.path='Figs/',
@@ -12,11 +12,11 @@ fig <- 0
 tbl <- 0
 
 data("mtcars")
+require(memisc)
+require(pander)
 require(ggplot2)
 require(dplyr)
 require(knitr)
-require(pander)
-require(memisc)
 
 data("mtcars")
 
@@ -25,7 +25,16 @@ cars <- data.frame(mtcars)
 
 ## Motor Trend Car Road Tests
 
-Analysis of MT car data
+### Executive Summary
+
+### Introduction
+Motor Trend is interested in exploring the relationship between a set of variables and miles per gallon (MPG) (outcome). They have provided a set of data from automobiles that they tested over a period of time.  They are particularly interested in the following two questions:
+
+* “Is an automatic or manual transmission better for MPG”
+* "Quantify the MPG difference between automatic and manual transmissions"
+
+A modern automobile is a complex machine and   would suggest that no one variable is fully responsible for its performance and efficiency
+
 
 ***
 A data frame with 32 observations on 11 variables.

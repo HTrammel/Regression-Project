@@ -45,7 +45,7 @@ cyl_fit_coef <- summary(cyl_fit)$coef
 print(kable(cyl_fit_coef, caption="Numb. Cylinders Coefficients"))
 
 # [, 3]	disp	Displacement (cu.in.)
-disp_fit <- lm(mpg ~ am + gear, data = cars)
+disp_fit <- lm(mpg ~ disp, data = cars)
 disp_fit_coef <- summary(disp_fit)$coef
 print(kable(disp_fit_coef, caption="Displacement Coefficients"))
 
