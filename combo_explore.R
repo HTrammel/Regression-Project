@@ -54,54 +54,54 @@ pander(weight_mod)
 g_wt = ggplot(cars, aes(x = wt, y = mpg)) + 
     ylab("Miles per gallon") + 
     xlab("Weight lb/1000") + 
-    geom_point(aes(fill=am), size= 5) + 
+    geom_point(aes(color=factor(am)), size= 5) + 
     geom_smooth(method = "lm", colour = "black") 
 print(g_wt)
 
 # Transmission effects on Engine impacted MPG
 # [, 2] cyl     Number of cylinders
-cyl_fit <- lm(mpg ~ cyl, data = cars)
-cyl_fit_coef <- summary(cyl_fit)$coef
+# cyl_fit <- lm(mpg ~ cyl, data = cars)
+# cyl_fit_coef <- summary(cyl_fit)$coef
 #print(kable(cyl_fit_coef, caption="Numb. Cylinders Coefficients"))
 
 # [, 3] disp    Displacement (cu.in.)
-disp_fit <- lm(mpg ~ disp, data = cars)
-disp_fit_coef <- summary(disp_fit)$coef
+# disp_fit <- lm(mpg ~ disp, data = cars)
+# disp_fit_coef <- summary(disp_fit)$coef
 #print(kable(disp_fit_coef, caption="Displacement Coefficients"))
 
 # [, 4] hp      Gross horsepower
-hp_fit <- lm(mpg ~ hp, data = cars)
-hp_fit_coef <- summary(hp_fit)$coef
+# hp_fit <- lm(mpg ~ hp, data = cars)
+# hp_fit_coef <- summary(hp_fit)$coef
 #print(kable(hp_fit_coef, caption="Horsepower Coefficients"))
 
 # [, 8] vs      V/S
-vs_fit <- lm(mpg ~ vs, data = cars)
-vs_fit_coef <- summary(vs_fit)$coef
+# vs_fit <- lm(mpg ~ vs, data = cars)
+# vs_fit_coef <- summary(vs_fit)$coef
 #print(kable(vs_fit_coef, caption="Vee vs Straight Coefficients"))
 
 # [,11] carb    Number of carburetors
-carb_fit <- lm(mpg ~ carb, data = cars)
-carb_fit_coef <- summary(carb_fit)$coef
+# carb_fit <- lm(mpg ~ carb, data = cars)
+# carb_fit_coef <- summary(carb_fit)$coef
 #print(kable(carb_fit_coef, caption="Numb. Carburator Coefficients"))
 
 
 # Transmission effects on Drivetrain impacted MPG
 
 # [,10]	gear	Number of forward gears
-gr_fit <- lm(mpg ~ gear, data = cars)
-gr_fit_coef <- summary(gr_fit)$coef
+# gr_fit <- lm(mpg ~ gear, data = cars)
+# gr_fit_coef <- summary(gr_fit)$coef
 #print(kable(gr_fit_coef, caption="Numb. Gears Coefficients"))
 
 # [, 5]	drat	Rear axle ratio
-drat_fit <- lm(mpg ~ drat, data = cars)
-drat_fit_coef <- summary(drat_fit)$coef
+# drat_fit <- lm(mpg ~ drat, data = cars)
+# drat_fit_coef <- summary(drat_fit)$coef
 #print(kable(drat_fit_coef, caption="Rear Gear Ratio Coefficients"))
 
 
 
 # Transmission effects on Performance impacted MPG
 # [, 7]	qsec	1/4 mile time
-qsec_fit <- lm(mpg ~ qsec, data = cars)
-qsec_fit_coef <- summary(qsec_fit)$coef
+# qsec_fit <- lm(mpg ~ qsec, data = cars)
+# qsec_fit_coef <- summary(qsec_fit)$coef
 #print(kable(qsec_fit_coef, caption="Quarter Mile Time Coefficients"))
 

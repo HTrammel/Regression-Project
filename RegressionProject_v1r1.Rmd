@@ -14,6 +14,7 @@ tbl <- 0
 data("mtcars")
 require(memisc)
 require(pander)
+require(car)
 require(ggplot2)
 require(dplyr)
 require(knitr)
@@ -33,7 +34,9 @@ Motor Trend is interested in exploring the relationship between a set of variabl
 * “Is an automatic or manual transmission better for MPG”
 * "Quantify the MPG difference between automatic and manual transmissions"
 
-A modern automobile is a complex machine and   would suggest that no one variable is fully responsible for its performance and efficiency
+A modern automobile is a complex machine and as such no one component is fully responsible for its performance and efficiency.  Some of the cars in the sample have been designed for performance while others were designed for performance or luxury.  
+
+
 
 
 ***

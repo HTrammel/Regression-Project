@@ -1,0 +1,107 @@
+---
+title: "Regression Project.Rmd"
+author: "Harold Trammel"
+date: "September 7, 2015"
+output: html_document
+---
+```{r global_options, include=TRUE, echo=FALSE}
+knitr::opts_chunk$set(fig.width=12, fig.height=7, fig.path='Figs/',
+                      echo=TRUE, warning=FALSE, message=FALSE)
+options(scipen=1, digits=2)
+fig <- 0
+tbl <- 0
+
+data("mtcars")
+require(car)
+require(ggplot2)
+require(dplyr)
+require(knitr)
+
+data("mtcars")
+
+cars <- data.frame(mtcars)
+```
+
+## Fit all variables against MPG
+```{r all_fit}
+all_fit <- lm(mpg ~ . , data = cars)
+all_fit_coef <- summary(all_fit)$coef
+kable(all_fit_coef, caption="All Fit Coefficients")
+```
+
+## Fit automatic vs manual against MPG
+```{r am_fit}
+# [, 9] am      Transmission (0 = automatic, 1 = manual)
+am_fit <- lm(mpg ~ am, data = cars)
+am_fit_coef <- summary(am_fit)$coef
+kable(am_fit_coef, caption="All Fit Coefficients")
+
+g_am = ggplot(cars, aes(x = am, y = mpg)) + 
+    ylab("Miles per gallon") + 
+    xlab("Automatic or Manual") + 
+    geom_point(aes(y=mpg), size = 7, colour = "black", alpha=0.5) + 
+    geom_point(aes(x=am),size = 5, colour = "blue", alpha=0.6) +
+    geom_smooth(method = "lm", colour = "black") 
+print(g_am)
+
+
+auto_df <- mtcars %>% 
+            filter(am == 0) %>% 
+            select(one_of(c("mpg")))
+
+auto_sum <- summary(auto_df, responseName="Automatic MPG")
+
+manual_df <- mtcars %>% 
+            filter(am == 1) %>% 
+            select(one_of(c("mpg"))) %>% 
+manual_sum <- summary(manual_df, responseName="Manual MPG")
+
+ss <- cbind(auto_sum, manual_sum)
+
+kable(ss, col.names = c("Automatic MPG","Manual MPG"), align="l")
+```
+
+
+## Motor Trend Car Road Tests
+
+Evaluation Criteria
+
+* Did the student interpret the coefficients correctly?
+* Did the student do some exploratory data analyses?
+* Did the student fit multiple models and detail their strategy for model selection?
+* Did the student answer the questions of interest or detail why the question(s) is (are) not answerable?
+* Did the student do a residual plot and some diagnostics?
+* Did the student quantify the uncertainty in their conclusions and/or perform an inference correctly?
+* Was the report brief (about 2 pages long) for the main body of the report and no longer than 5 with supporting appendix of figures?
+* ~~Did the report include an executive summary?~~
+* ~~Was the report done in Rmd (knitr)?~~
+
+
+### Executive Summary
+
+### Introduction
+Motor Trend is interested in exploring the relationship between a set of variables and miles per gallon (MPG) (outcome). They have provided a set of data from automobiles that they tested over a period of time.  They are particularly interested in the following two questions:
+
+* “Is an automatic or manual transmission better for MPG”
+* "Quantify the MPG difference between automatic and manual transmissions"
+
+A modern automobile is a complex machine and as such no one component is fully responsible for its performance and efficiency.  Some of the cars in the sample have been designed for performance while others were designed for performance or luxury.  
+
+
+***
+A data frame with 32 observations on 11 variables.
+```
+[, 1]	mpg	    Miles/(US) gallon
+[, 2]	cyl	    Number of cylinders
+[, 3]	disp	Displacement (cu.in.)
+[, 4]	hp	    Gross horsepower
+[, 5]	drat	Rear axle ratio
+[, 6]	wt	    Weight (lb/1000)
+[, 7]	qsec	1/4 mile time
+[, 8]	vs	    Vee vs Straight Cylinder Arrangement
+[, 9]	am	    Transmission (0 = automatic, 1 = manual)
+[,10]	gear	Number of forward gears
+[,11]	carb	Number of carburetors
+```
+***
+
