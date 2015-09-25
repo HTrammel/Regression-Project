@@ -1,0 +1,152 @@
+---
+title: "Regression Project.Rmd"
+author: "Harold Trammel"
+date: "September 7, 2015"
+output: html_document
+---
+
+
+```{r global_options, include=TRUE, echo=FALSE}
+knitr::opts_chunk$set(fig.width=12, fig.height=7, fig.path='Figs/',
+                      echo=FALSE, warning=FALSE, message=FALSE)
+options(scipen=1, digits=4)
+
+data("mtcar_df")
+require(ggplot2)
+require(dplyr)
+require(knitr)
+
+se <- function(x) sqrt(var(x)/length(x))
+
+desc_stat_lbl <- c("number of values (nbr.val) "
+                    ,"number of null values (nbr.null) "
+                    ,"number of missing values (nbr.na)"
+                    ,"minimal value (min)"
+                    ,"maximal value (max)"
+                    ,"range (range that is max-min)"
+                    ,"sum of all non-missing values (sum)"
+                    ,"median (median)"
+                    ,"mean (mean)"
+                    ,"standard error on mean (SE.mean) "
+                    ,"confidence interval of mean (CI.mean)"
+                    ,"variance (var) "
+                    ,"standard deviation (std.dev) "
+                    ,"variation coefficient (coef.var)") 
+
+car_df <- data.frame(mtcars)
+car_df$cyl <- as.factor(car_df$cyl)
+car_df$vs <- as.factor(car_df$vs)
+car_df$am <- as.factor(car_df$am)
+car_df$gear <- as.factor(car_df$gear)
+car_df$carb <- as.factor(car_df$carb)
+
+levels(car_df$vs)[1] <- "vee"
+levels(car_df$vs)[2] <- "Straight"
+levels(car_df$am)[1] <- "Automatic"
+levels(car_df$am)[2] <- "Manual"
+
+am_stat <- car_df %>%
+    group_by(am) %>%
+    summarise_each(funs(mean, sd, se), mpg) %>%
+    rename( mpg_mn = mean, mpg_sd = sd, mpg_se = se )
+
+```
+
+## _Motor Trend_ Car Road Tests
+
+### Executive Summary
+
+### Introduction
+_Motor Trend_ is interested in exploring the relationship between a set of variables and miles per gallon (MPG) (outcome). They have provided a set of data from automobiles that they tested over a period of time.  They are particularly interested in the following two questions:
+
+* "Is an automatic or manual transmission better for MPG"
+* "Quantify the MPG difference between automatic and manual transmissions"
+
+A modern automobile is a complex machine and as such no one component is fully responsible for its performance and efficiency.  Some of the car_df in the sample have been designed for performance while others were designed for performance or luxury.  This inherent complexity must be kept in mind when looking a single complonent such as the type of transmission.
+
+### General Exploration
+The data that _Motor Trend_ provided was eleven different measured collected from 32 different automobiles.  Three of the variables (Miles Per Gallon, Gross Horsepower, and 1/4 Mile Time) are dependent on different sets of the other variables.  Some of the variables are factors even though their values are numeric.  These are: Number of Cylinders, Vee vs Straight Cylinder Arrangement, Transmission Type, Number of Forward Gears, and Number of Carburators.  Displacement, Rear Axle Ratio, and Weight are continous variables.
+
+As part of the exploration phase, I generated scatter plots of all the variables against mileage and correlation matrix. 
+
+### Focused Analysis
+I compared the statistics related to milage recorded in car_df with automatic transmissions to those with manual.  The mean milage in automatic car_df was `r am_stat[1,"mpg_mn"]` &plusmn; `r am_stat[1,"mpg_se"]` (std. error of mean) with a standard deviation of `r am_stat[1,"mpg_sd"]`.   For manual transmission car_df, the mean milage `r am_stat[2,"mpg_mn"]` &plusmn; `r am_stat[2,"mpg_se"]` (std. error of mean) with a standard deviation of `r am_stat[2,"mpg_sd"]`. 
+
+
+
+
+### Appendix
+```{r figs_tbls}
+fig <- 0
+tbl <- 0
+
+# correlation mattix
+all_cor <- cor(mtcars)
+mpg_cor <- matrix(all_cor, nrow=11, ncol=1, dimnames = list(rownames(all_cor),"mpg"))
+kable(mpg_cor, caption = "Correlation of Mileage and All Other Variables", format.args = list(width=6))
+
+# transmission type and mileage
+fig <- fig + 1
+mpg_am_pl = ggplot(car_df, aes(x = am, y=mpg, fill = am)) + 
+    geom_boxplot() +     
+    ylab("Miles per gallon") + 
+    xlab("Transmission type") + 
+    ggtitle(paste("Figure",fig," Distribution of Milage by Transmission Type"))
+    
+print(mpg_am_pl)
+
+
+all_fit <- lm(mpg ~ . , data = car_df)
+all_fit_coef <- summary(all_fit)$coef
+kable(all_fit_coef, caption="All Fit Coefficients")
+
+all_cor <- cor(mtcars)
+# kable(all_cor)
+
+nonfact_fit <- lm(mpg ~ wt + disp + hp + drat , data = car_df)
+nonfact_fit_coef <- summary(nonfact_fit)$coef
+kable(nonfact_fit_coef, caption="Milage to Weight, Displacement, Horsepower, and Rear-Axle Ratio Coefficients")
+
+fact_fit <- lm(mpg ~ am + gear + cyl + vs + carb , data = car_df)
+fact_fit_coef <- summary(fact_fit)$coef
+kable(fact_fit_coef, caption="Milage to Transmission Type, Gear Count, Cylinder Count, Carburator Count and Cylinder Arrangment Coefficients")
+
+am_fit <- lm(mpg ~ am, data = car_df)
+am_fit_coef <- summary(am_fit)$coef
+kable(am_fit_coef, caption="Automatic vs Manual Coefficients")
+
+am_glm <- glm(mpg ~ am, data=car_df, family="quasipoisson")
+#print(summary(glm(am_glm)))
+
+
+```
+
+#### Reference
+```
+A data frame with 32 observations on 11 variables.
+[, 1]   mpg     Miles/(US) gallon
+[, 2]   cyl     Number of cylinders
+[, 3]   disp    Displacement (cu.in.)
+[, 4]   hp      Gross horsepower
+[, 5]   drat    Rear axle ratio
+[, 6]   wt      Weight (lb/1000)
+[, 7]   qsec    1/4 mile time
+[, 8]   vs      Vee vs Straight Cylinder Arrangement
+[, 9]   am      Transmission (0 = automatic, 1 = manual)
+[,10]   gear    Number of forward gears
+[,11]   carb    Number of carburetors
+
+```
+
+Evaluation Criteria
+
+* Did the student interpret the coefficients correctly?
+* Did the student do some exploratory data analyses?
+* Did the student fit multiple models and detail their strategy for model selection?
+* Did the student answer the questions of interest or detail why the question(s) is (are) not answerable?
+* Did the student do a residual plot and some diagnostics?
+* Did the student quantify the uncertainty in their conclusions and/or perform an inference correctly?
+* Was the report brief (about 2 pages long) for the main body of the report and no longer than 5 with supporting appendix of figures?
+* ~~Did the report include an executive summary?~~
+* ~~Was the report done in Rmd (knitr)?~~
+

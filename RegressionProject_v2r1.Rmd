@@ -4,23 +4,9 @@ author: "Harold Trammel"
 date: "September 7, 2015"
 output: html_document
 ---
-```{r global_options, include=TRUE, echo=FALSE}
-knitr::opts_chunk$set(fig.width=12, fig.height=7, fig.path='Figs/',
-                      echo=TRUE, warning=FALSE, message=FALSE)
-options(scipen=1, digits=4)
-fig <- 0
-tbl <- 0
 
-data("mtcars")
-require(car)
-require(pastecs)
-require(ggplot2)
-require(dplyr)
-require(knitr)
 ```
-***
 A data frame with 32 observations on 11 variables.
-```
 [, 1]   mpg     Miles/(US) gallon
 [, 2]   cyl     Number of cylinders
 [, 3]   disp    Displacement (cu.in.)
@@ -32,33 +18,21 @@ A data frame with 32 observations on 11 variables.
 [, 9]   am      Transmission (0 = automatic, 1 = manual)
 [,10]   gear    Number of forward gears
 [,11]   carb    Number of carburetors
+
 ```
-***
 
-```{r process_things}
-all_fit <- lm(mpg ~ . , data = mtcars)
-all_fit_coef <- summary(all_fit)$coef
-kable(all_fit_coef, caption="All Fit Coefficients")
-
-am_fit <- lm(mpg ~ am, data = mtcars)
-am_fit_coef <- summary(am_fit)$coef
-kable(am_fit_coef, caption="All Fit Coefficients")
-
-g_am = ggplot(mtcars, aes(x = am, y = mpg)) + 
-    ylab("Miles per gallon") + 
-    xlab("Automatic or Manual") + 
-    geom_point(aes(y=mpg), size = 7, colour = "black", alpha=0.5) + 
-    geom_point(aes(x=am),size = 5, colour = "blue", alpha=0.6) +
-    geom_smooth(method = "lm", colour = "black") 
-print(g_am)
+```{r global_options, include=TRUE, echo=FALSE}
+knitr::opts_chunk$set(fig.width=12, fig.height=7, fig.path='Figs/',
+                      echo=TRUE, warning=FALSE, message=FALSE)
+options(scipen=1, digits=4)
 
 
-auto_df <- mtcars %>% 
-            filter(am == 0) %>% 
-            select(one_of(c("mpg")))
-manual_df <- mtcars %>% 
-            filter(am == 1) %>% 
-            select(one_of(c("mpg")))
+data("mtcars")
+require(car)
+require(pastecs)
+require(ggplot2)
+require(dplyr)
+require(knitr)
 
 desc_stat_lbl <- c("number of values (nbr.val) "
                     ,"number of null values (nbr.null) "
@@ -74,12 +48,58 @@ desc_stat_lbl <- c("number of values (nbr.val) "
                     ,"variance (var) "
                     ,"standard deviation (std.dev) "
                     ,"variation coefficient (coef.var)") 
+
+cars <- data.frame(mtcars)
+cars$cyl <- as.factor(cars$cyl)
+cars$vs <- as.factor(cars$vs)
+cars$am <- as.factor(cars$am)
+cars$gear <- as.factor(cars$gear)
+cars$carb <- as.factor(cars$carb)
+
+######## START STUFF ###########################
+
+auto_df <- cars %>% 
+    filter(am == 0) %>% 
+    select(one_of(c("mpg")))
+manual_df <- cars %>% 
+    filter(am == 1) %>% 
+    select(one_of(c("mpg")))
+
+
 stat_table <- data.frame(matrix(data=1:42, nrow=14, ncol=1))
 stat_table[,1] <- desc_stat_lbl
 stat_table <- cbind(stat_table, stat.desc(auto_df), stat.desc(manual_df))
-names(stat_table) <- c("Statistic", "auto", "manual")
+names(stat_table) <- c("stat", "auto", "man")
 
-kable(stat_table, digits = getOption("digits"), row.names=F, col.names = c("Statistic", "Automatic", "Manual"))
+
+all_fit <- lm(mpg ~ . , data = cars)
+all_fit_coef <- summary(all_fit)$coef
+kable(all_fit_coef, caption="All Fit Coefficients")
+
+all_cor <- cor(mtcars)
+# kable(all_cor)
+
+nonfact_fit <- lm(mpg ~ wt + disp + hp + drat , data = cars)
+nonfact_fit_coef <- summary(nonfact_fit)$coef
+kable(nonfact_fit_coef, caption="Milage to Weight, Displacement, Horsepower, and Rear-Axle Ratio Coefficients")
+
+fact_fit <- lm(mpg ~ am + gear + cyl + vs + carb , data = cars)
+fact_fit_coef <- summary(fact_fit)$coef
+kable(fact_fit_coef, caption="Milage to Transmission Type, Gear Count, Cylinder Count, Carburator Count and Cylinder Arrangment Coefficients")
+
+am_fit <- lm(mpg ~ am, data = cars)
+am_fit_coef <- summary(am_fit)$coef
+kable(am_fit_coef, caption="Automatic vs Manual Coefficients")
+
+# digits set to vector did not work
+# print(kable(stat_table, digits = c(0,0,0,2,2,2,2,2,4,4,4,4,4,4), row.names=F))
+kable(stat_table, digits = getOption("digits"), row.names=F, col.names = c("Statistic","Automatic","Manual"))
+
+am_glm <- glm(mpg ~ am, data=cars, family="quasipoisson")
+#print(summary(glm(am_glm)))
+
+
+
 ```
 
 ## _Motor Trend_ Car Road Tests
@@ -102,7 +122,7 @@ Evaluation Criteria
 ### Introduction
 _Motor Trend_ is interested in exploring the relationship between a set of variables and miles per gallon (MPG) (outcome). They have provided a set of data from automobiles that they tested over a period of time.  They are particularly interested in the following two questions:
 
-* “Is an automatic or manual transmission better for MPG”
+* "Is an automatic or manual transmission better for MPG"
 * "Quantify the MPG difference between automatic and manual transmissions"
 
 A modern automobile is a complex machine and as such no one component is fully responsible for its performance and efficiency.  Some of the cars in the sample have been designed for performance while others were designed for performance or luxury.  This inherent complexity must be kept in mind when looking a single complonent such as the type of transmission.
@@ -110,8 +130,15 @@ A modern automobile is a complex machine and as such no one component is fully r
 ### General Exploration
 The data that _Motor Trend_ provided was eleven different measured collected from 32 different automobiles.  Three of the variables (Miles Per Gallon, Gross Horsepower, and 1/4 Mile Time) are dependent on different sets of the other variables.  Some of the variables are factors even though their values are numeric.  These are: Number of Cylinders, Vee vs Straight Cylinder Arrangement, Transmission Type, Number of Forward Gears, and Number of Carburators.  Displacement, Rear Axle Ratio, and Weight are continous variables.
 
-I compared the statistics related to milage recorded in cars with automatic transmissions to those with manual.  The mean milage in automatic cars was `r stat_table["mean","auto"]` &plusmn; `r stat_table["SE.mean","auto"]`.
+I compared the statistics related to milage recorded in cars with automatic transmissions to those with manual.  The mean milage in automatic cars was `r stat_table["mean","auto"]` &plusmn; `r stat_table["SE.mean","auto"]` (std. error of mean) with a standard deviation of `r stat_table["std.dev","auto"]`.   For manual transmission cars, the mean milage `r stat_table["mean","man"]` &plusmn; `r stat_table["SE.mean","man"]` (std. error of mean) with a standard deviation of `r stat_table["std.dev","man"]`. 
+
 
 
 ### Appendix
+```{r figs_tbls}
+fig <- 0
+tbl <- 0
 
+# correlation mattix
+fig <- fig + 1
+kable(all_cor, caption = paste("Table",tbl,"Correlation Matrix for All Variables"))
