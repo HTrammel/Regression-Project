@@ -11,7 +11,7 @@ knitr::opts_chunk$set(fig.width=12, fig.height=7, fig.path='Figs/',
                       echo=FALSE, warning=FALSE, message=FALSE)
 options(scipen=1, digits=4)
 
-data("mtcar_df")
+data("mtcarDF")
 require(ggplot2)
 require(dplyr)
 require(knitr)
@@ -33,22 +33,27 @@ desc_stat_lbl <- c("number of values (nbr.val) "
                     ,"standard deviation (std.dev) "
                     ,"variation coefficient (coef.var)") 
 
-car_df <- data.frame(mtcars)
-car_df$cyl <- as.factor(car_df$cyl)
-car_df$vs <- as.factor(car_df$vs)
-car_df$am <- as.factor(car_df$am)
-car_df$gear <- as.factor(car_df$gear)
-car_df$carb <- as.factor(car_df$carb)
+carDF <- data.frame(mtcars)
+carDF$cyl <- as.factor(carDF$cyl)
+carDF$vs <- as.factor(carDF$vs)
+carDF$am <- as.factor(carDF$am)
+carDF$gear <- as.factor(carDF$gear)
+carDF$carb <- as.factor(carDF$carb)
 
-levels(car_df$vs)[1] <- "vee"
-levels(car_df$vs)[2] <- "Straight"
-levels(car_df$am)[1] <- "Automatic"
-levels(car_df$am)[2] <- "Manual"
+levels(carDF$vs)[1] <- "vee"
+levels(carDF$vs)[2] <- "Straight"
+levels(carDF$am)[1] <- "Automatic"
+levels(carDF$am)[2] <- "Manual"
 
-am_stat <- car_df %>%
+am_stat <- carDF %>%
     group_by(am) %>%
     summarise_each(funs(mean, sd, se), mpg) %>%
     rename( mpg_mn = mean, mpg_sd = sd, mpg_se = se )
+
+stat_table <- data.frame(matrix(data=1:42, nrow=14, ncol=1))
+stat_table[,1] <- desc_stat_lbl
+stat_table <- cbind(stat_table, stat.desc(auto_df), stat.desc(manual_df))
+names(stat_table) <- c("stat", "auto", "man")
 
 ```
 
@@ -62,7 +67,7 @@ _Motor Trend_ is interested in exploring the relationship between a set of varia
 * "Is an automatic or manual transmission better for MPG"
 * "Quantify the MPG difference between automatic and manual transmissions"
 
-A modern automobile is a complex machine and as such no one component is fully responsible for its performance and efficiency.  Some of the car_df in the sample have been designed for performance while others were designed for performance or luxury.  This inherent complexity must be kept in mind when looking a single complonent such as the type of transmission.
+A modern automobile is a complex machine and as such no one component is fully responsible for its performance and efficiency.  Some of the carDF in the sample have been designed for performance while others were designed for performance or luxury.  This inherent complexity must be kept in mind when looking a single complonent such as the type of transmission.
 
 ### General Exploration
 The data that _Motor Trend_ provided was eleven different measured collected from 32 different automobiles.  Three of the variables (Miles Per Gallon, Gross Horsepower, and 1/4 Mile Time) are dependent on different sets of the other variables.  Some of the variables are factors even though their values are numeric.  These are: Number of Cylinders, Vee vs Straight Cylinder Arrangement, Transmission Type, Number of Forward Gears, and Number of Carburators.  Displacement, Rear Axle Ratio, and Weight are continous variables.
@@ -70,7 +75,7 @@ The data that _Motor Trend_ provided was eleven different measured collected fro
 As part of the exploration phase, I generated scatter plots of all the variables against mileage and correlation matrix. 
 
 ### Focused Analysis
-I compared the statistics related to milage recorded in car_df with automatic transmissions to those with manual.  The mean milage in automatic car_df was `r am_stat[1,"mpg_mn"]` &plusmn; `r am_stat[1,"mpg_se"]` (std. error of mean) with a standard deviation of `r am_stat[1,"mpg_sd"]`.   For manual transmission car_df, the mean milage `r am_stat[2,"mpg_mn"]` &plusmn; `r am_stat[2,"mpg_se"]` (std. error of mean) with a standard deviation of `r am_stat[2,"mpg_sd"]`. 
+I compared the statistics related to milage recorded in carDF with automatic transmissions to those with manual.  The mean milage in automatic carDF was `r am_stat[1,"mpg_mn"]` &plusmn; `r am_stat[1,"mpg_se"]` (std. error of mean) with a standard deviation of `r am_stat[1,"mpg_sd"]`.   For manual transmission carDF, the mean milage `r am_stat[2,"mpg_mn"]` &plusmn; `r am_stat[2,"mpg_se"]` (std. error of mean) with a standard deviation of `r am_stat[2,"mpg_sd"]`. 
 
 
 
@@ -82,13 +87,17 @@ tbl <- 0
 
 # correlation mattix
 tbl <- tbl + 1
-all_cor <- cor(mtcars)
-mpg_cor <- matrix(all_cor, nrow=11, ncol=1, dimnames = list(rownames(all_cor),"mpg"))
-kable(mpg_cor, caption = paste("Table",tbl," Correlation of Mileage and All Other Variables"))
+# digits set to vector did not work
+# print(kable(stat_table, digits = c(0,0,0,2,2,2,2,2,4,4,4,4,4,4), row.names=F))
+kable(stat_table, 
+    digits = getOption("digits"), 
+    row.names=F, 
+    col.names = c("Statistic","Automatic","Manual"),
+    caption="Table", tbl, "Mileage Impact by Transmission Type")
 
 # transmission type and mileage
 fig <- fig + 1
-mpg_am_pl = ggplot(car_df, aes(x = am, y=mpg, fill = am)) + 
+mpg_am_pl = ggplot(carDF, aes(x = am, y=mpg, fill = am)) + 
     geom_boxplot() +     
     ylab("Miles per gallon") + 
     xlab("Transmission type") + 
@@ -97,26 +106,26 @@ mpg_am_pl = ggplot(car_df, aes(x = am, y=mpg, fill = am)) +
 print(mpg_am_pl)
 
 
-all_fit <- lm(mpg ~ . , data = car_df)
+all_fit <- lm(mpg ~ . , data = carDF)
 all_fit_coef <- summary(all_fit)$coef
 kable(all_fit_coef, caption="All Fit Coefficients")
 
 all_cor <- cor(mtcars)
 # kable(all_cor)
 
-nonfact_fit <- lm(mpg ~ wt + disp + hp + drat , data = car_df)
+nonfact_fit <- lm(mpg ~ wt + disp + hp + drat , data = carDF)
 nonfact_fit_coef <- summary(nonfact_fit)$coef
 kable(nonfact_fit_coef, caption="Milage to Weight, Displacement, Horsepower, and Rear-Axle Ratio Coefficients")
 
-fact_fit <- lm(mpg ~ am + gear + cyl + vs + carb , data = car_df)
+fact_fit <- lm(mpg ~ am + gear + cyl + vs + carb , data = carDF)
 fact_fit_coef <- summary(fact_fit)$coef
 kable(fact_fit_coef, caption="Milage to Transmission Type, Gear Count, Cylinder Count, Carburator Count and Cylinder Arrangment Coefficients")
 
-am_fit <- lm(mpg ~ am, data = car_df)
+am_fit <- lm(mpg ~ am, data = carDF)
 am_fit_coef <- summary(am_fit)$coef
 kable(am_fit_coef, caption="Automatic vs Manual Coefficients")
 
-am_glm <- glm(mpg ~ am, data=car_df, family="quasipoisson")
+am_glm <- glm(mpg ~ am, data=carDF, family="quasipoisson")
 #print(summary(glm(am_glm)))
 
 

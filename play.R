@@ -4,7 +4,6 @@ fig <- 0
 tbl <- 0
 data("mtcars")
 require(car)
-require(pastecs)
 require(ggplot2)
 require(dplyr)
 require(knitr)
@@ -53,14 +52,16 @@ print(kable(all_fit_coef,
 )
 
 all_cor <- cor(mtcars)
-mpg_cor <- matrix(all_cor$mpg, nrow=11, ncol=1, dimnames = list(rownames(all_cor),"mpg"))
+mpg_cor <- matrix(mpg, nrow=11, ncol=1, dimnames = list(rownames(all_cor),"mpg"))
 
+nonfact_df <- car_df %>% select(one_of("mpg","wt","disp","hp","drat"))
 nonfact_fit <- lm(mpg ~ wt + disp + hp + drat , data = car_df)
 nonfact_fit_coef <- summary(nonfact_fit)$coef
 print(kable(nonfact_fit_coef, 
     caption="Milage to Weight, Displacement, Horsepower, and Rear-Axle Ratio Coefficients")
 )
 
+fact_df <- car_df %>% select(one_of("mpg","am","gear","cyl","vs","carb" ))
 fact_fit <- lm(mpg ~ am + gear + cyl + vs + carb , data = car_df)
 fact_fit_coef <- summary(fact_fit)$coef
 print(kable(fact_fit_coef, 
@@ -76,22 +77,35 @@ print(kable(am_fit_coef,
 am_glm <- glm(mpg ~ am, data=car_df, family="quasipoisson")
 #print(summary(glm(am_glm)))
 
-mpg_am_pl = ggplot(car_df, aes(x = mpg, fill = am)) + 
-    xlab("Miles per gallon") + 
-    ylab("Count of car_df") + 
-    geom_histogram(binwidth = 1) + 
-    #scale_x_continuous(breaks=0:1, labels=c("Automatic","Manual")) + 
-    facet_grid( am ~ . )
-    
-print(mpg_am_pl)
+# mpg_am_pl = ggplot(car_df, aes(x = mpg, fill = am)) + 
+#     xlab("Miles per gallon") + 
+#     ylab("Count of car_df") + 
+#     geom_histogram(binwidth = 1) + 
+#     #scale_x_continuous(breaks=0:1, labels=c("Automatic","Manual")) + 
+#     facet_wrap( am ~ . )
+#     
+# print(mpg_am_pl)
 
-# log_am = ggplot(car_df, aes(y = log(mpg))) + 
-#     ylab("Miles per gallon (log)") + 
-#     xlab("Automatic or Manual") + 
-#     geom_histogram() + 
-#     scale_x_continuous(breaks=0:1, labels=c("Automatic","Manual")) + 
-#     facet_grid( log(mpg) ~ am)
-# print(log_am)
+mpg_wt_pl = ggplot(nonfact_df, aes(x = mpg, y = wt)) + 
+    ylab("Miles per gallon") + 
+    xlab("Weight (1/1000 lb)") + 
+    geom_point() +
+    geom_smooth(method = "lm", colour = "black")
+print(mpg_wt_pl)    
+
+mpg_disp_pl = ggplot(nonfact_df, aes(x = mpg, y = disp)) + 
+    ylab("Miles per gallon") + 
+    xlab("Displacement (cu. in.)") + 
+    geom_point() +
+    geom_smooth(method = "lm", colour = "black")
+print(mpg_disp_pl)
+# + 
+#     geom_point(aes(y = disp)) + 
+#     geom_point(aes(y = hp)) + 
+#     geom_point(aes(y = drat)) + 
+#     facet_wrap(mpg~.)
+
+
 
 
 
