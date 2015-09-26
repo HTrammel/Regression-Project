@@ -2,21 +2,30 @@
 title: "Regression Project.Rmd"
 author: "Harold Trammel"
 date: "September 7, 2015"
-output: html_document
+output: pdf_document
 ---
 
 
 ```{r global_options, include=TRUE, echo=FALSE}
-knitr::opts_chunk$set(fig.width=12, fig.height=7, fig.path='Figs/',
-                      echo=FALSE, warning=FALSE, message=FALSE)
+knitr::opts_chunk$set(fig.width=7, 
+                    fig.height=4, 
+                    fig.path='Figs/',
+                    echo=FALSE, 
+                    warning=FALSE, 
+                    message=FALSE)
 options(scipen=1, digits=4)
+```
 
-data("mtcarDF")
+```{r setup_things, echo=FALSE, warning=FALSE, message=FALSE}
+data("mtcars")
+require(pastecs)
+require(car)
 require(ggplot2)
 require(dplyr)
 require(knitr)
 
-se <- function(x) sqrt(var(x)/length(x))
+fig <- 1
+tbl <- 1
 
 desc_stat_lbl <- c("number of values (nbr.val) "
                     ,"number of null values (nbr.null) "
@@ -45,21 +54,24 @@ levels(carDF$vs)[2] <- "Straight"
 levels(carDF$am)[1] <- "Automatic"
 levels(carDF$am)[2] <- "Manual"
 
-am_stat <- carDF %>%
-    group_by(am) %>%
-    summarise_each(funs(mean, sd, se), mpg) %>%
-    rename( mpg_mn = mean, mpg_sd = sd, mpg_se = se )
+auto_df <- carDF %>% 
+    filter(am == "Automatic") %>% 
+    select(one_of(c("mpg")))
+manual_df <- carDF %>% 
+    filter(am == "Manual") %>% 
+    select(one_of(c("mpg")))
 
-stat_table <- data.frame(matrix(data=1:42, nrow=14, ncol=1))
-stat_table[,1] <- desc_stat_lbl
-stat_table <- cbind(stat_table, stat.desc(auto_df), stat.desc(manual_df))
-names(stat_table) <- c("stat", "auto", "man")
+statTbl <- data.frame(matrix(data=1:42, nrow=14, ncol=1))
+statTbl[,1] <- desc_stat_lbl
+statTbl <- cbind(statTbl, stat.desc(auto_df), stat.desc(manual_df))
+names(statTbl) <- c("stat", "auto", "man")
 
 ```
 
 ## _Motor Trend_ Car Road Tests
 
 ### Executive Summary
+An analysis of the impact that transmission type has on gas mileage was performed on the _Motor Trend_ car data.  This data shows that automatic transmissions have negative impact on gasoline mileage when compared to manual transmissions.  On average, cars in this data with automatic transmissions have `r statTbl["mean","man"] - statTbl["mean","auto"]` fewer miles per gallon.  This is a simplistic conclusion however as there were other variables such as car waight, horsepower, and engine displacemnt impacting this data.  It is recommended that a decision to select a higher mileage car not be made simply on the transmission type.
 
 ### Introduction
 _Motor Trend_ is interested in exploring the relationship between a set of variables and miles per gallon (MPG) (outcome). They have provided a set of data from automobiles that they tested over a period of time.  They are particularly interested in the following two questions:
@@ -72,91 +84,98 @@ A modern automobile is a complex machine and as such no one component is fully r
 ### General Exploration
 The data that _Motor Trend_ provided was eleven different measured collected from 32 different automobiles.  Three of the variables (Miles Per Gallon, Gross Horsepower, and 1/4 Mile Time) are dependent on different sets of the other variables.  Some of the variables are factors even though their values are numeric.  These are: Number of Cylinders, Vee vs Straight Cylinder Arrangement, Transmission Type, Number of Forward Gears, and Number of Carburators.  Displacement, Rear Axle Ratio, and Weight are continous variables.
 
-As part of the exploration phase, I generated scatter plots of all the variables against mileage and correlation matrix. 
+As part of the exploration phase, I generated correlation matrix, which is provided in Table 1.  Analysis of this matrix identified Number of Cylinders, Gross Horsepower, Displacement, and Weight as having a negative correlation greater than 0.75.  Rear Axle Ratio, Vee vs Straight Cylinder Arrangement, Transmission Type, and Number of Forward Gears had mild positive correlation with values between 0.48 and 0.68.
 
 ### Focused Analysis
-I compared the statistics related to milage recorded in carDF with automatic transmissions to those with manual.  The mean milage in automatic carDF was `r am_stat[1,"mpg_mn"]` &plusmn; `r am_stat[1,"mpg_se"]` (std. error of mean) with a standard deviation of `r am_stat[1,"mpg_sd"]`.   For manual transmission carDF, the mean milage `r am_stat[2,"mpg_mn"]` &plusmn; `r am_stat[2,"mpg_se"]` (std. error of mean) with a standard deviation of `r am_stat[2,"mpg_sd"]`. 
+I compared the statistics related to milage recorded in cars with automatic transmissions to those with manual transmissions (see Table 2).  The mean milage in automatic cars was `r statTbl["mean","auto"]` &plusmn; `r statTbl["SE.mean","auto"]` (std. error of mean) with a standard deviation of `r statTbl["std.dev","auto"]`.   For manual transmission cars, the mean milage `r statTbl["mean","man"]` &plusmn; `r statTbl["SE.mean","man"]` (std. error of mean) with a standard deviation of `r statTbl["std.dev","man"]`.  
 
+Since there are only two types of tranmission, a linear relationship with mileage was obvious.  I used a simple linear regression model to confirm my expectation and the resulting coeffients are shown in Table 3.  The p-values were less that 0.05 but the variance seen in the basic statistics suggested more analysis was required.  I prepared a plot of the residuals of this model (shown in Figure 1).  This shows that the manual transmission has approximately a 20 mpg spread.  I also prepared a residual QQ plot for this simple linear regression model and the residuals fell very close to the line.  Based on this collection of results, it would seem that transmission type is a reasonable predictor of mileage; however, basic knowledge of automobile function warrants additional study.
 
+### Additional Analysis
 
+I decided to look for possible factors that could be causing this.  I decided to do nested model testing with other variables.  I started with the Mileage to Transmission Type model and progressively added the following: Weight, Number of Carburators, Horsepower, Number of Cylindars, and Engine Displacement.  (The ANOVA table is shown in Table ?????.) The addition of Weight had the strongest effect, which is understandable considering that lower weight cars had better gas mileage than heavier cars and that manual transmissions were more commonly seen in lower weight cars.  This can bee seen in Figure 3.
+
+### Conclusion
+
+Automatic transmissions have been maligned for causing lower gasoline mileage and this analysis supports that assertion.  While transmission type plays a role in mileage, other factors are also involved.
 
 ### Appendix
-```{r figs_tbls}
-fig <- 0
-tbl <- 0
+&nbsp;
+
+```{r cor_table}
 
 # correlation mattix
+all_cor <- cor(mtcars)
+kable(all_cor, 
+    digits = getOption("digits"), 
+    caption=paste("Table", tbl, "Correlation Matrix for All Variables"))
 tbl <- tbl + 1
-# digits set to vector did not work
-# print(kable(stat_table, digits = c(0,0,0,2,2,2,2,2,4,4,4,4,4,4), row.names=F))
-kable(stat_table, 
+
+```
+
+&nbsp;   
+
+```{r am_stat_tbl}
+# basic statistics
+kable(statTbl, 
     digits = getOption("digits"), 
     row.names=F, 
     col.names = c("Statistic","Automatic","Manual"),
-    caption="Table", tbl, "Mileage Impact by Transmission Type")
+    caption=paste("Table", tbl, "Mileage Impact by Transmission Type"))
+tbl <- tbl + 1
 
-# transmission type and mileage
-fig <- fig + 1
-mpg_am_pl = ggplot(carDF, aes(x = am, y=mpg, fill = am)) + 
-    geom_boxplot() +     
-    ylab("Miles per gallon") + 
-    xlab("Transmission type") + 
-    ggtitle(paste("Figure",fig," Distribution of Milage by Transmission Type"))
-    
-print(mpg_am_pl)
+```
+&nbsp;   
 
-
-all_fit <- lm(mpg ~ . , data = carDF)
-all_fit_coef <- summary(all_fit)$coef
-kable(all_fit_coef, caption="All Fit Coefficients")
-
-all_cor <- cor(mtcars)
-# kable(all_cor)
-
-nonfact_fit <- lm(mpg ~ wt + disp + hp + drat , data = carDF)
-nonfact_fit_coef <- summary(nonfact_fit)$coef
-kable(nonfact_fit_coef, caption="Milage to Weight, Displacement, Horsepower, and Rear-Axle Ratio Coefficients")
-
-fact_fit <- lm(mpg ~ am + gear + cyl + vs + carb , data = carDF)
-fact_fit_coef <- summary(fact_fit)$coef
-kable(fact_fit_coef, caption="Milage to Transmission Type, Gear Count, Cylinder Count, Carburator Count and Cylinder Arrangment Coefficients")
+```{r am_mpg_lr}
 
 am_fit <- lm(mpg ~ am, data = carDF)
 am_fit_coef <- summary(am_fit)$coef
-kable(am_fit_coef, caption="Automatic vs Manual Coefficients")
+kable(am_fit_coef, caption=paste("Table", tbl, "Automatic vs Manual Coefficients"))
+tbl <- tbl + 1
 
-am_glm <- glm(mpg ~ am, data=carDF, family="quasipoisson")
-#print(summary(glm(am_glm)))
+am_e <- resid(am_fit)
+e_am_pl = ggplot(carDF, aes(x = am, y=am_e, fill = am)) + 
+    ylab("Miles per gallon") + 
+    xlab("Transmission type")  +
+    guides(colour = guide_legend(title="Transmission")) +
+    geom_boxplot() +     
+    ggtitle(paste("Figure", fig, "Residuals of Transmission vs Mileage"))
+print(e_am_pl)
+fig <- fig + 1
 
-
-```
-
-#### Reference
-```
-A data frame with 32 observations on 11 variables.
-[, 1]   mpg     Miles/(US) gallon
-[, 2]   cyl     Number of cylinders
-[, 3]   disp    Displacement (cu.in.)
-[, 4]   hp      Gross horsepower
-[, 5]   drat    Rear axle ratio
-[, 6]   wt      Weight (lb/1000)
-[, 7]   qsec    1/4 mile time
-[, 8]   vs      Vee vs Straight Cylinder Arrangement
-[, 9]   am      Transmission (0 = automatic, 1 = manual)
-[,10]   gear    Number of forward gears
-[,11]   carb    Number of carburetors
+qqPlot(lm(mpg ~ am, carDF), 
+        main=paste("Figure", fig, "QQ Plot of Transmission to Mileage LRM"), 
+        grid=T, 
+        ylab="Studentized Residuals")
+fig <- fig + 1
 
 ```
 
-Evaluation Criteria
+##### Table `r tbl`: ANOVA Table of Nested Models
+&nbsp;   
 
-* Did the student interpret the coefficients correctly?
-* Did the student do some exploratory data analyses?
-* Did the student fit multiple models and detail their strategy for model selection?
-* Did the student answer the questions of interest or detail why the question(s) is (are) not answerable?
-* Did the student do a residual plot and some diagnostics?
-* Did the student quantify the uncertainty in their conclusions and/or perform an inference correctly?
-* Was the report brief (about 2 pages long) for the main body of the report and no longer than 5 with supporting appendix of figures?
-* ~~Did the report include an executive summary?~~
-* ~~Was the report done in Rmd (knitr)?~~
+```{r nested_model_test}
 
+fit <- lm(mpg ~ am, carDF)
+fit2 <- update(fit, mpg ~ am + wt)
+fit3 <- update(fit, mpg ~ am + wt + carb)
+fit4 <- update(fit, mpg ~ am + wt + carb + hp)
+fit5 <- update(fit, mpg ~ am + wt + carb + hp + cyl)
+fit6 <- update(fit, mpg ~ am + wt + carb + hp + cyl + disp)
+
+print(anova(fit, fit2, fit3, fit4, fit5, fit6))
+
+```
+
+```{r wt_am_mpg}
+mpg_wt_pl = ggplot(carDF, aes(x = wt, y = mpg)) + 
+    ylab("Miles per gallon") + 
+    xlab("Weight (1/1000 lb)") + 
+    guides(colour = guide_legend(title="Transmission")) +
+    geom_point(aes(colour=am), size=2) +    
+    ggtitle(paste("Figure", fig, "Weight Impact on Mileage"))
+    geom_smooth(method = "lm", colour = "black")
+print(mpg_wt_pl)    
+fig <- fig + 1
+```
