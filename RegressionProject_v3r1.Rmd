@@ -2,7 +2,10 @@
 title: "Regression Project.Rmd"
 author: "Harold Trammel"
 date: "September 7, 2015"
-output: pdf_document
+output:
+  pdf_document:
+    fig_caption: yes
+  html_document: default
 ---
 
 
@@ -71,7 +74,7 @@ names(statTbl) <- c("stat", "auto", "man")
 ## _Motor Trend_ Car Road Tests
 
 ### Executive Summary
-An analysis of the impact that transmission type has on gas mileage was performed on the _Motor Trend_ car data.  This data shows that automatic transmissions have negative impact on gasoline mileage when compared to manual transmissions.  On average, cars in this data with automatic transmissions have `r statTbl["mean","man"] - statTbl["mean","auto"]` fewer miles per gallon.  This is a simplistic conclusion however as there were other variables such as car waight, horsepower, and engine displacemnt impacting this data.  It is recommended that a decision to select a higher mileage car not be made simply on the transmission type.
+An analysis of the impact that transmission type has on gas mileage was performed on the _Motor Trend_ car data.  This data shows that automatic transmissions have negative impact on gasoline mileage when compared to manual transmissions.  On average, cars in this data with automatic transmissions have `r statTbl["mean","man"] - statTbl["mean","auto"]` fewer miles per gallon.  This is a simplistic conclusion however as there were other variables such as car weight, horsepower, and engine displacement impacting this data.  It is recommended that a decision to select a higher mileage car not be made simply on the transmission type.
 
 ### Introduction
 _Motor Trend_ is interested in exploring the relationship between a set of variables and miles per gallon (MPG) (outcome). They have provided a set of data from automobiles that they tested over a period of time.  They are particularly interested in the following two questions:
@@ -79,21 +82,21 @@ _Motor Trend_ is interested in exploring the relationship between a set of varia
 * "Is an automatic or manual transmission better for MPG"
 * "Quantify the MPG difference between automatic and manual transmissions"
 
-A modern automobile is a complex machine and as such no one component is fully responsible for its performance and efficiency.  Some of the carDF in the sample have been designed for performance while others were designed for performance or luxury.  This inherent complexity must be kept in mind when looking a single complonent such as the type of transmission.
+A modern automobile is a complex machine and as such no one component is fully responsible for its performance and efficiency.  Some of the cars in the sample have been designed for performance while others were designed for performance or luxury.  This inherent complexity must be kept in mind when looking a single component such as the type of transmission.
 
 ### General Exploration
-The data that _Motor Trend_ provided was eleven different measured collected from 32 different automobiles.  Three of the variables (Miles Per Gallon, Gross Horsepower, and 1/4 Mile Time) are dependent on different sets of the other variables.  Some of the variables are factors even though their values are numeric.  These are: Number of Cylinders, Vee vs Straight Cylinder Arrangement, Transmission Type, Number of Forward Gears, and Number of Carburators.  Displacement, Rear Axle Ratio, and Weight are continous variables.
+The data that _Motor Trend_ provided was eleven different measured collected from 32 different automobiles.  Three of the variables (Miles Per Gallon, Gross Horsepower, and 1/4 Mile Time) are dependent on different sets of the other variables.  Some of the variables are factors even though their values are numeric.  These are: Number of Cylinders, Vee vs Straight Cylinder Arrangement, Transmission Type, Number of Forward Gears, and Number of Carburetors.  Displacement, Rear Axle Ratio, and Weight are continuous variables.
 
 As part of the exploration phase, I generated correlation matrix, which is provided in Table 1.  Analysis of this matrix identified Number of Cylinders, Gross Horsepower, Displacement, and Weight as having a negative correlation greater than 0.75.  Rear Axle Ratio, Vee vs Straight Cylinder Arrangement, Transmission Type, and Number of Forward Gears had mild positive correlation with values between 0.48 and 0.68.
 
 ### Focused Analysis
-I compared the statistics related to milage recorded in cars with automatic transmissions to those with manual transmissions (see Table 2).  The mean milage in automatic cars was `r statTbl["mean","auto"]` &plusmn; `r statTbl["SE.mean","auto"]` (std. error of mean) with a standard deviation of `r statTbl["std.dev","auto"]`.   For manual transmission cars, the mean milage `r statTbl["mean","man"]` &plusmn; `r statTbl["SE.mean","man"]` (std. error of mean) with a standard deviation of `r statTbl["std.dev","man"]`.  
+I compared the statistics related to mileage recorded in cars with automatic transmissions to those with manual transmissions (see Table 2).  The mean mileage in automatic cars was `r statTbl["mean","auto"]` &plusmn; `r statTbl["SE.mean", "auto"]` (std. error of mean) with a standard deviation of `r statTbl["std.dev", "auto"]`.   For manual transmission cars, the mean milage `r statTbl["mean","man"]` &plusmn; `r statTbl["SE.mean", "man"]` (std. error of mean) with a standard deviation of `r statTbl["std.dev", "man"]`.  
 
-Since there are only two types of tranmission, a linear relationship with mileage was obvious.  I used a simple linear regression model to confirm my expectation and the resulting coeffients are shown in Table 3.  The p-values were less that 0.05 but the variance seen in the basic statistics suggested more analysis was required.  I prepared a plot of the residuals of this model (shown in Figure 1).  This shows that the manual transmission has approximately a 20 mpg spread.  I also prepared a residual QQ plot for this simple linear regression model and the residuals fell very close to the line.  Based on this collection of results, it would seem that transmission type is a reasonable predictor of mileage; however, basic knowledge of automobile function warrants additional study.
+Since there are only two types of transmission, a linear relationship with mileage was obvious.  I used a simple linear regression model to confirm my expectation and the resulting coefficients are shown in Table 3.  The p-values were less that 0.05 but the variance seen in the basic statistics suggested more analysis was required.  I prepared a plot of the residuals of this model (shown in Figure 1).  This shows that the manual transmission has approximately a 20 mpg spread.  I also prepared a residual QQ plot for this simple linear regression model and the residuals fell very close to the line.  Based on this collection of results, it would seem that transmission type is a reasonable predictor of mileage; however, basic knowledge of automobile function warrants additional study.
 
 ### Additional Analysis
 
-I decided to look for possible factors that could be causing this.  I decided to do nested model testing with other variables.  I started with the Mileage to Transmission Type model and progressively added the following: Weight, Number of Carburators, Horsepower, Number of Cylindars, and Engine Displacement.  (The ANOVA table is shown in Table ?????.) The addition of Weight had the strongest effect, which is understandable considering that lower weight cars had better gas mileage than heavier cars and that manual transmissions were more commonly seen in lower weight cars.  This can bee seen in Figure 3.
+I looked for possible factors that could be causing this variation.  I decided to do nested model testing with other variables.  I started with the Mileage to Transmission Type model and progressively added the following: Weight, Number of Carburetors, Horsepower, Number of Cylinders, and Engine Displacement.  (The ANOVA table is shown in Table 4.) The addition of Weight had the strongest effect, which is understandable considering that lower weight cars had better gas mileage than heavier cars and that manual transmissions were more commonly seen in lower weight cars.  This can bee seen in Figure 3.
 
 ### Conclusion
 
@@ -153,18 +156,17 @@ fig <- fig + 1
 ```
 
 ##### Table `r tbl`: ANOVA Table of Nested Models
-&nbsp;   
+__NOTE:__ The results produced by ANOVA in knitr are different from the results in R environment and in RStudio.   
 
-```{r nested_model_test}
+```{r nested_model_test, digits=8}
 
 fit <- lm(mpg ~ am, carDF)
 fit2 <- update(fit, mpg ~ am + wt)
 fit3 <- update(fit, mpg ~ am + wt + carb)
 fit4 <- update(fit, mpg ~ am + wt + carb + hp)
 fit5 <- update(fit, mpg ~ am + wt + carb + hp + cyl)
-fit6 <- update(fit, mpg ~ am + wt + carb + hp + cyl + disp)
-
-print(anova(fit, fit2, fit3, fit4, fit5, fit6))
+fit6 <- update(fit, mpg ~ am + wt + carb + hp + cyl + drat)
+anova(fit, fit2, fit3, fit4, fit5, fit6)
 
 ```
 
@@ -174,8 +176,10 @@ mpg_wt_pl = ggplot(carDF, aes(x = wt, y = mpg)) +
     xlab("Weight (1/1000 lb)") + 
     guides(colour = guide_legend(title="Transmission")) +
     geom_point(aes(colour=am), size=2) +    
-    ggtitle(paste("Figure", fig, "Weight Impact on Mileage"))
+    ggtitle(paste("Figure", fig, "Weight Impact on Mileage")) +
     geom_smooth(method = "lm", colour = "black")
 print(mpg_wt_pl)    
+
 fig <- fig + 1
+
 ```
